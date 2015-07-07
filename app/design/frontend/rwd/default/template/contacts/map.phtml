@@ -1,0 +1,64 @@
+<?php
+
+    $gmap_address = urlencode("United Kingdom Greater London London 02587 Oxford Street 48/188");
+    $gmap_url = "http://maps.googleapis.com/maps/api/geocode/json?address=$gmap_address&sensor=false";
+
+    $ch = curl_init();
+        
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_URL, $gmap_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    
+    $raw = curl_exec($ch);
+    $gmap_data = json_decode($raw);
+
+    if ($gmap_data->results) :
+        $lat = $gmap_data->results[0]->geometry->location->lat;
+        $lng = $gmap_data->results[0]->geometry->location->lng;
+?>
+    <style>
+        .gm-style img { max-width:none; }
+	#contacts-gmap{ width:100%; height:300px; margin-bottom:30px;}
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script>
+    //<![CDATA[
+    var store = new google.maps.LatLng(<?php echo $lat ?>, <?php echo $lng ?>);
+    var marker;
+    var map;
+
+    function initialize() {
+        var mapOptions = {
+            zoom: 15,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            center: store,
+            panControl: false,
+            zoomControl: false,
+            mapTypeControl: false,
+            scaleControl: false,
+            streetViewControl: false,
+            overviewMapControl: false
+        };
+
+        map = new google.maps.Map(document.getElementById('contacts-gmap'), mapOptions);
+
+        marker = new google.maps.Marker({
+            map: map,
+            draggable: false,
+            animation: google.maps.Animation.DROP,
+            position: store,
+            icon: "http://maps.google.com/mapfiles/marker.png"
+        });
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+    google.maps.event.addDomListener(window, 'resize', initialize);
+    //]]>
+    </script>
+<?php endif; ?>
+
+<div class="grid-full no-gutter">
+    <div id="contacts-gmap">
+    </div>
+</div>
